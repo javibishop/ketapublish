@@ -497,7 +497,7 @@ angular.module('app.keta', [
             }
         };
     }])
-    .directive('ketaMovilAtencionesGrid', function ($state, Restangular) {
+    .directive('ketaMovilAtencionesGrid', function ($state, Restangular, alertify) {
     return {
         restrict: 'A',
         scope: { height: '@', selectedItems: '=' },
@@ -511,7 +511,7 @@ angular.module('app.keta', [
             element.append(gridElement);
             element.append(pagerElement);
             scope.height = scope.height || 450;
-            var colNames = ['', 'Patente', 'Marca', 'Modelo', 'Nombre', 'Apellido', 'Telefono', 'Fecha'];
+            var colNames = ['', '', 'Patente', 'Marca', 'Modelo', 'Nombre', 'Apellido', 'Telefono', 'Fecha'];
             var colModel = [
                 {
                     name: 'editCommand',
@@ -522,6 +522,16 @@ angular.module('app.keta', [
                     sortable: false,
                     search: false,
                     formatter: function () { return '<i class="fa fa-caret-right hand"></i>'; }
+                },
+                {
+                    name: 'deleteCommand',
+                    index: 'deleteCommand',
+                    width: 25,
+                    align: 'center',
+                    fixed: true,
+                    sortable: false,
+                    search: false,
+                    formatter: function () { return '<i class="fa fa-times hand"></i>'; }
                 },
                 { name: 'patente', index: 'patente', search: true, width: 150, fixed: true },
                 { name: 'marcaCodigo', index: 'marcaCodigo', search: true, width: 150, fixed: true },
@@ -558,6 +568,18 @@ angular.module('app.keta', [
                         var stateName = 'app.keta.movilatencionedit';
                         $state.go(stateName, { movilatencionId: rowId });
                         return false;
+                    }
+                    if (iCol === 1) {
+                        alertify.confirm("Desea eliminar el registro?.", function (e) {
+                            if (e) {
+                                Restangular.one('servicios').one('movilatenciones').one('delete').post(rowId).then(function (result) {
+                                    if (result.result == true)
+                                        $state.reload();
+                                    else
+                                        alert("No se pudo borrar el cliente.");
+                                });
+                            }
+                        });
                     }
                 },
                 beforeSelectRow: function (rowid, e) {
